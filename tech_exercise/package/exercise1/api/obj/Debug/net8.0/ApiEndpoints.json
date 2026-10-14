@@ -1,0 +1,76 @@
+[
+  {
+    "ContainingType": "StargateAPI.Controllers.AstronautDutyController",
+    "Method": "CreateAstronautDuty",
+    "RelativePath": "AstronautDuty",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "StargateAPI.Business.Commands.CreateAstronautDuty",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StargateAPI.Controllers.AstronautDutyController",
+    "Method": "GetAstronautDutiesByName",
+    "RelativePath": "AstronautDuty/{name}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "name",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StargateAPI.Controllers.PersonController",
+    "Method": "GetPeople",
+    "RelativePath": "Person",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StargateAPI.Controllers.PersonController",
+    "Method": "CreatePerson",
+    "RelativePath": "Person",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "name",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StargateAPI.Controllers.PersonController",
+    "Method": "GetPersonByName",
+    "RelativePath": "Person/{name}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "name",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
