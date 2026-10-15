@@ -54,7 +54,7 @@ namespace StargateAPI.Business.Commands
         }
         public async Task<CreateAstronautDutyResult> Handle(CreateAstronautDuty request, CancellationToken cancellationToken)
         {
-            var person = await _context.People.AsNoTracking().FirstOrDefaultAsync(z => z.Name == request.Name);
+            var person = await _context.People.AsNoTracking().FirstOrDefaultAsync(z => z.Name == request.Name, cancellationToken);
 
             if (person is null)
             {
@@ -63,6 +63,8 @@ namespace StargateAPI.Business.Commands
             }
 
             var astronautDetail = await _context.AstronautDetails.FirstOrDefaultAsync(z => z.PersonId == person.Id, cancellationToken);
+
+            var isRetiring = request.DutyTitle.Equals(RETIRED, StringComparison.InvariantCultureIgnoreCase);
 
             if (astronautDetail == null)
             {
@@ -73,21 +75,26 @@ namespace StargateAPI.Business.Commands
                     CurrentRank = request.Rank,
                     CareerStartDate = request.DutyStartDate.Date
                 };
-                if (request.DutyTitle.Equals(RETIRED, StringComparison.InvariantCultureIgnoreCase))
+                if (isRetiring)
                 {
                     astronautDetail.CareerEndDate = request.DutyStartDate.Date;
                 }
 
-                await _context.AstronautDetails.AddAsync(astronautDetail);
+                await _context.AstronautDetails.AddAsync(astronautDetail, cancellationToken);
 
             }
             else
             {
                 astronautDetail.CurrentDutyTitle = request.DutyTitle;
                 astronautDetail.CurrentRank = request.Rank;
-                if (request.DutyTitle.Equals(RETIRED, StringComparison.InvariantCultureIgnoreCase))
+                if (isRetiring)
                 {
                     astronautDetail.CareerEndDate = request.DutyStartDate.AddDays(-1).Date;
+                }
+                if (!isRetiring && astronautDetail.CareerEndDate is not null)
+                {
+                    //They have come out of retirement, so we will set the CareerEndDate to null.
+                    astronautDetail.CareerEndDate = null;
                 }
                 _context.AstronautDetails.Update(astronautDetail);
             }
@@ -109,9 +116,9 @@ namespace StargateAPI.Business.Commands
                 DutyEndDate = null
             };
 
-            await _context.AstronautDuties.AddAsync(newAstronautDuty);
+            await _context.AstronautDuties.AddAsync(newAstronautDuty, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             return new CreateAstronautDutyResult()
             {
