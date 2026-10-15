@@ -34,7 +34,7 @@ namespace StargateAPI.Business.Commands
 
             if (person is null) throw new BadHttpRequestException("Bad Request");
 
-            var verifyNoPreviousDuty = _context.AstronautDuties.AsNoTracking().FirstOrDefault(z => z.DutyTitle.Equals(request.DutyTitle, StringComparison.InvariantCultureIgnoreCase) && z.DutyStartDate == request.DutyStartDate);
+            var verifyNoPreviousDuty = _context.AstronautDuties.AsNoTracking().FirstOrDefault(z => z.DutyTitle == request.DutyTitle && z.DutyStartDate == request.DutyStartDate);
 
             if (verifyNoPreviousDuty is not null) throw new BadHttpRequestException("Bad Request");
 
@@ -61,7 +61,7 @@ namespace StargateAPI.Business.Commands
         }
         public async Task<CreateAstronautDutyResult> Handle(CreateAstronautDuty request, CancellationToken cancellationToken)
         {
-            var person = await _context.People.AsNoTracking().FirstOrDefaultAsync(z => z.Name.Equals(request.Name, StringComparison.InvariantCultureIgnoreCase), cancellationToken);
+            var person = await _context.People.AsNoTracking().FirstOrDefaultAsync(z => z.Name == request.Name, cancellationToken);
 
             if (person is null)
             {

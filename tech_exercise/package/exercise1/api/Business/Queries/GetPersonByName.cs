@@ -34,7 +34,7 @@ namespace StargateAPI.Business.Queries
                     CareerStartDate = p.AstronautDetail != null ? p.AstronautDetail.CareerStartDate : null,
                     CareerEndDate = p.AstronautDetail != null ? p.AstronautDetail.CareerEndDate : null
                 })
-                .FirstOrDefaultAsync(p => p.Name.Equals(request.Name, StringComparison.InvariantCultureIgnoreCase), cancellationToken);
+                .FirstOrDefaultAsync(p => p.Name == request.Name, cancellationToken);
 
             result.Person = personAstronaut;
 

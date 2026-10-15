@@ -62,7 +62,8 @@ namespace StargateAPI.Migrations
 
                     b.Property<string>("DutyTitle")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("INTEGER");
@@ -86,7 +87,8 @@ namespace StargateAPI.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
 
                     b.HasKey("Id");
 
