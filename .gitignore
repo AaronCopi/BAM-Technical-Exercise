@@ -3,3 +3,7 @@ tech_exercise/package/exercise1/api/.vs/
 tech_exercise/package/exercise1/api/obj/
 tech_exercise/package/exercise1/api/bin/
 tech_exercise/package/exercise1/api/StargateAPI.slnx
+tech_exercise/package/exercise1/api/TestResults/
+tech_exercise/package/exercise1/tests/StargateAPI.Tests/StargateAPI.Tests.slnx
+tech_exercise/package/exercise1/tests/StargateAPI.Tests/bin/
+tech_exercise/package/exercise1/tests/StargateAPI.Tests/obj/
