@@ -35,7 +35,7 @@ namespace StargateAPI.Business.Queries
                 CurrentDutyTitle = ad.CurrentDutyTitle,
                 CareerStartDate = ad.CareerStartDate,
                 CareerEndDate = ad.CareerEndDate
-            }).FirstOrDefaultAsync(p => p.Name == request.Name, cancellationToken);
+            }).FirstOrDefaultAsync(p => p.Name.Equals(request.Name, StringComparison.InvariantCultureIgnoreCase), cancellationToken);
 
             if (personAstronaut is null)
             {

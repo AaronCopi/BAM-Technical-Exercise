@@ -21,7 +21,7 @@ namespace StargateAPI.Business.Commands
         }
         public Task Process(UpdatePerson request, CancellationToken cancellationToken)
         {
-            var person = _context.People.AsNoTracking().FirstOrDefault(z => z.Name == request.Name);
+            var person = _context.People.AsNoTracking().FirstOrDefault(z => z.Name.Equals(request.Name, StringComparison.InvariantCultureIgnoreCase));
             if (person is null) throw new BadHttpRequestException("Bad Request");
             return Task.CompletedTask;
         }
@@ -36,7 +36,7 @@ namespace StargateAPI.Business.Commands
         }
         public async Task<UpdatePersonResult> Handle(UpdatePerson request, CancellationToken cancellationToken)
         {
-            var person = await _context.People.FirstOrDefaultAsync(z => z.Name == request.Name);
+            var person = await _context.People.FirstOrDefaultAsync(z => z.Name.Equals(request.Name, StringComparison.InvariantCultureIgnoreCase), cancellationToken);
             if (person is null) throw new BadHttpRequestException("Bad Request");
             person.Name = request.NewName;
             await _context.SaveChangesAsync();
