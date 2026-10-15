@@ -45,5 +45,6 @@ namespace StargateAPI.Business.Queries
     public class GetPersonByNameResult : BaseResponse
     {
         public PersonAstronaut? Person { get; set; }
+        public new int ResponseCode => !string.IsNullOrEmpty(Person?.Name) ? (int)System.Net.HttpStatusCode.OK : (int)System.Net.HttpStatusCode.NoContent;
     }
 }
