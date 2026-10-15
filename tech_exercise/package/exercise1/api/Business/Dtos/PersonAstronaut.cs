@@ -1,5 +1,8 @@
-﻿namespace StargateAPI.Business.Dtos
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace StargateAPI.Business.Dtos
 {
+    [ExcludeFromCodeCoverage]
     public class PersonAstronaut
     {
         public int PersonId { get; set; }
