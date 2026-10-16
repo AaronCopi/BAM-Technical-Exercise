@@ -17,14 +17,15 @@ namespace StargateAPI.Controllers
         }
 
         [HttpGet("{name}")]
-        public async Task<IActionResult> GetAstronautDutiesByName(string name)
+        public async Task<IActionResult> GetAstronautDutiesByName(string name, CancellationToken cancellationToken)
         {
             try
             {
+                var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
                 var result = await _mediator.Send(new GetAstronautDutiesByName()
                 {
                     Name = name
-                });
+                }, ct);
 
                 return this.GetResponse(result);
             }
@@ -40,11 +41,12 @@ namespace StargateAPI.Controllers
         }
 
         [HttpPost("")]
-        public async Task<IActionResult> CreateAstronautDuty([FromBody] CreateAstronautDuty request)
+        public async Task<IActionResult> CreateAstronautDuty([FromBody] CreateAstronautDuty request, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _mediator.Send(request);
+                var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
+                var result = await _mediator.Send(request, ct);
                 return this.GetResponse(result);
             }
             catch (Exception ex)

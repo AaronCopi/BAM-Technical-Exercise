@@ -18,14 +18,12 @@ namespace StargateAPI.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> GetPeople()
+        public async Task<IActionResult> GetPeople(CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _mediator.Send(new GetPeople()
-                {
-
-                });
+                var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
+                var result = await _mediator.Send(new GetPeople(), ct);
 
                 return this.GetResponse(result);
             }
@@ -41,14 +39,15 @@ namespace StargateAPI.Controllers
         }
 
         [HttpGet("{name}")]
-        public async Task<IActionResult> GetPersonByName(string name)
+        public async Task<IActionResult> GetPersonByName(string name, CancellationToken cancellationToken)
         {
             try
             {
+                var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
                 var result = await _mediator.Send(new GetPersonByName()
                 {
                     Name = name
-                });
+                }, ct);
 
                 return this.GetResponse(result);
             }
@@ -64,14 +63,15 @@ namespace StargateAPI.Controllers
         }
 
         [HttpPost("")]
-        public async Task<IActionResult> CreatePerson([FromBody] string name)
+        public async Task<IActionResult> CreatePerson([FromBody] string name, CancellationToken cancellationToken)
         {
             try
             {
+                var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
                 var result = await _mediator.Send(new CreatePerson()
                 {
                     Name = name
-                });
+                }, ct);
 
                 return this.GetResponse(result);
             }
@@ -87,15 +87,16 @@ namespace StargateAPI.Controllers
         }
 
         [HttpPut("{name}")]
-        public async Task<IActionResult> UpdatePerson(string name, [FromBody] string newName)
+        public async Task<IActionResult> UpdatePerson(string name, [FromBody] string newName, CancellationToken cancellationToken)
         {
             try
             {
+                var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
                 var result = await _mediator.Send(new UpdatePerson()
                 {
                     Name = name,
                     NewName = newName
-                });
+                }, ct);
 
                 return this.GetResponse(result);
             }

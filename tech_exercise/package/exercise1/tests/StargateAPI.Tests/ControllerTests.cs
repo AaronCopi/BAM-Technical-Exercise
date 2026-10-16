@@ -26,7 +26,7 @@ namespace StargateAPI.Tests
             var mediator = mock.Object;
 
             var controller = new PersonController(mediator);
-            var actionResult = await controller.GetPeople();
+            var actionResult = await controller.GetPeople(CancellationToken.None);
 
             var obj = Assert.IsType<ObjectResult>(actionResult);
             // Controller.GetResponse takes BaseResponse, so the runtime status code is taken from BaseResponse.ResponseCode
@@ -45,7 +45,7 @@ namespace StargateAPI.Tests
             var mediator = mock2.Object;
 
             var controller = new PersonController(mediator);
-            var actionResult = await controller.GetPersonByName("Nobody");
+            var actionResult = await controller.GetPersonByName("Nobody", CancellationToken.None);
 
             var obj = Assert.IsType<ObjectResult>(actionResult);
             var asBase = Assert.IsAssignableFrom<BaseResponse>(obj.Value);
@@ -66,11 +66,11 @@ namespace StargateAPI.Tests
 
             var controller = new PersonController(mediator);
 
-            var createAction = await controller.CreatePerson("NewName");
+            var createAction = await controller.CreatePerson("NewName", CancellationToken.None);
             var createObj = Assert.IsType<ObjectResult>(createAction);
             Assert.Same(createResult, createObj.Value);
 
-            var updateAction = await controller.UpdatePerson("NewName", "UpdatedName");
+            var updateAction = await controller.UpdatePerson("NewName", "UpdatedName", CancellationToken.None);
             var updateObj = Assert.IsType<ObjectResult>(updateAction);
             Assert.Same(updateResult, updateObj.Value);
         }
@@ -83,7 +83,7 @@ namespace StargateAPI.Tests
             var mediator = mock4.Object;
 
             var controller = new AstronautDutyController(mediator);
-            var actionResult = await controller.GetAstronautDutiesByName("Someone");
+            var actionResult = await controller.GetAstronautDutiesByName("Someone", CancellationToken.None);
 
             var obj = Assert.IsType<ObjectResult>(actionResult);
             Assert.Equal((int)System.Net.HttpStatusCode.InternalServerError, obj.StatusCode);
@@ -100,7 +100,7 @@ namespace StargateAPI.Tests
             var mediator = mock5.Object;
 
             var controller = new AstronautDutyController(mediator);
-            var actionResult = await controller.CreateAstronautDuty(new CreateAstronautDuty { Name = "A", DutyTitle = "B", Rank = "C", DutyStartDate = DateTime.UtcNow });
+            var actionResult = await controller.CreateAstronautDuty(new CreateAstronautDuty { Name = "A", DutyTitle = "B", Rank = "C", DutyStartDate = DateTime.UtcNow }, CancellationToken.None);
 
             var obj = Assert.IsType<ObjectResult>(actionResult);
             Assert.Same(created, obj.Value);

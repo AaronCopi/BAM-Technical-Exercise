@@ -28,24 +28,24 @@ namespace StargateAPI.Business.Commands
             _context = context;
         }
 
-        public Task Process(CreateAstronautDuty request, CancellationToken cancellationToken)
+        public async Task Process(CreateAstronautDuty request, CancellationToken cancellationToken)
         {
-            var person = _context.People.AsNoTracking().FirstOrDefault(z => z.Name == request.Name);
+            var person = await _context.People.AsNoTracking().FirstOrDefaultAsync(z => z.Name == request.Name, cancellationToken);
 
             if (person is null) throw new BadHttpRequestException("Bad Request");
 
-            var verifyNoPreviousDuty = _context.AstronautDuties.AsNoTracking().FirstOrDefault(z => z.DutyTitle == request.DutyTitle && z.DutyStartDate == request.DutyStartDate);
+            var verifyNoPreviousDuty = await _context.AstronautDuties.AsNoTracking().FirstOrDefaultAsync(z => z.DutyTitle == request.DutyTitle && z.DutyStartDate == request.DutyStartDate, cancellationToken);
 
             if (verifyNoPreviousDuty is not null) throw new BadHttpRequestException("Bad Request");
 
-            var mostRecentDuty = _context.AstronautDuties.AsNoTracking().OrderByDescending(z => z.DutyStartDate).FirstOrDefault(z => z.PersonId == person.Id);
+            var mostRecentDuty = await _context.AstronautDuties.AsNoTracking().OrderByDescending(z => z.DutyStartDate).FirstOrDefaultAsync(z => z.PersonId == person.Id, cancellationToken);
 
             if (mostRecentDuty is not null && mostRecentDuty.DutyStartDate >= request.DutyStartDate)
             {
                 throw new BadHttpRequestException("Bad Request");
             }
 
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
     }
 
