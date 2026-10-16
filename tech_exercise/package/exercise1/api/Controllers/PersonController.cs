@@ -6,7 +6,6 @@ using System.Net;
 
 namespace StargateAPI.Controllers
 {
-   
     [ApiController]
     [Route("[controller]")]
     public class PersonController : ControllerBase
@@ -20,95 +19,43 @@ namespace StargateAPI.Controllers
         [HttpGet("")]
         public async Task<IActionResult> GetPeople(CancellationToken cancellationToken)
         {
-            try
-            {
-                var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
-                var result = await _mediator.Send(new GetPeople(), ct);
-
-                return this.GetResponse(result);
-            }
-            catch (Exception ex)
-            {
-                return this.GetResponse(new BaseResponse()
-                {
-                    Message = ex.Message,
-                    Success = false,
-                    ResponseCode = (int)HttpStatusCode.InternalServerError
-                });
-            }
+            var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
+            var result = await _mediator.Send(new GetPeople(), ct);
+            return this.GetResponse(result);
         }
 
         [HttpGet("{name}")]
         public async Task<IActionResult> GetPersonByName(string name, CancellationToken cancellationToken)
         {
-            try
+            var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
+            var result = await _mediator.Send(new GetPersonByName()
             {
-                var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
-                var result = await _mediator.Send(new GetPersonByName()
-                {
-                    Name = name
-                }, ct);
-
-                return this.GetResponse(result);
-            }
-            catch (Exception ex)
-            {
-                return this.GetResponse(new BaseResponse()
-                {
-                    Message = ex.Message,
-                    Success = false,
-                    ResponseCode = (int)HttpStatusCode.InternalServerError
-                });
-            }
+                Name = name
+            }, ct);
+            return this.GetResponse(result);
         }
 
         [HttpPost("")]
         public async Task<IActionResult> CreatePerson([FromBody] string name, CancellationToken cancellationToken)
         {
-            try
+            var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
+            var result = await _mediator.Send(new CreatePerson()
             {
-                var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
-                var result = await _mediator.Send(new CreatePerson()
-                {
-                    Name = name
-                }, ct);
-
-                return this.GetResponse(result);
-            }
-            catch (Exception ex)
-            {
-                return this.GetResponse(new BaseResponse()
-                {
-                    Message = ex.Message,
-                    Success = false,
-                    ResponseCode = (int)HttpStatusCode.InternalServerError
-                });
-            }
+                Name = name
+            }, ct);
+            return this.GetResponse(result);
         }
 
         [HttpPut("{name}")]
         public async Task<IActionResult> UpdatePerson(string name, [FromBody] string newName, CancellationToken cancellationToken)
         {
-            try
+            var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
+            var result = await _mediator.Send(new UpdatePerson()
             {
-                var ct = cancellationToken == default ? (HttpContext?.RequestAborted ?? CancellationToken.None) : cancellationToken;
-                var result = await _mediator.Send(new UpdatePerson()
-                {
-                    Name = name,
-                    NewName = newName
-                }, ct);
-
-                return this.GetResponse(result);
-            }
-            catch (Exception ex)
-            {
-                return this.GetResponse(new BaseResponse()
-                {
-                    Message = ex.Message,
-                    Success = false,
-                    ResponseCode = (int)HttpStatusCode.InternalServerError
-                });
-            }
+                Name = name,
+                NewName = newName
+            }, ct);
+            return this.GetResponse(result);
         }
     }
 }

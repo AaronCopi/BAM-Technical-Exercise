@@ -30,6 +30,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Global exception handling middleware
+app.UseMiddleware<StargateAPI.Controllers.ExceptionHandlingMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();

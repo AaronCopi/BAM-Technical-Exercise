@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using MediatR;
 using StargateAPI.Controllers;
 using StargateAPI.Business.Queries;
@@ -76,19 +77,20 @@ namespace StargateAPI.Tests
         }
 
         [Fact]
-        public async Task AstronautDutyController_GetThrows_ReturnsInternalError()
+        public async Task ExceptionHandlingMiddleware_MapsExceptionToResponse()
         {
-            var mock4 = new Mock<IMediator>();
-            mock4.Setup(m => m.Send(It.IsAny<GetAstronautDutiesByName>(), It.IsAny<CancellationToken>())).Throws(new Exception("boom"));
-            var mediator = mock4.Object;
+            var middleware = new StargateAPI.Controllers.ExceptionHandlingMiddleware(ctx => throw new Exception("boom"));
+            var httpContext = new DefaultHttpContext();
+            httpContext.Response.Body = new System.IO.MemoryStream();
 
-            var controller = new AstronautDutyController(mediator);
-            var actionResult = await controller.GetAstronautDutiesByName("Someone", CancellationToken.None);
+            await middleware.InvokeAsync(httpContext);
 
-            var obj = Assert.IsType<ObjectResult>(actionResult);
-            Assert.Equal((int)System.Net.HttpStatusCode.InternalServerError, obj.StatusCode);
-            var value = Assert.IsType<BaseResponse>(obj.Value);
-            Assert.False(value.Success);
+            Assert.Equal((int)System.Net.HttpStatusCode.InternalServerError, httpContext.Response.StatusCode);
+            httpContext.Response.Body.Seek(0, System.IO.SeekOrigin.Begin);
+            using var reader = new System.IO.StreamReader(httpContext.Response.Body);
+            var body = await reader.ReadToEndAsync();
+            var resp = System.Text.Json.JsonSerializer.Deserialize<StargateAPI.Controllers.BaseResponse>(body);
+            Assert.False(resp.Success);
         }
 
         [Fact]
