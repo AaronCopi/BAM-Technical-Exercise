@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using MediatR;
 using StargateAPI.Controllers;
 using StargateAPI.Business.Queries;
@@ -34,6 +35,26 @@ namespace StargateAPI.Tests
             var obj = Assert.IsType<ObjectResult>(actionResult);
             // Controller.GetResponse takes BaseResponse, so the runtime status code is taken from BaseResponse.ResponseCode
             var asBase = Assert.IsAssignableFrom<BaseResponse>(obj.Value);
+            Assert.Equal(asBase.ResponseCode, obj.StatusCode);
+            Assert.Same(expected, obj.Value);
+        }
+
+        [Fact]
+        public async Task AstronautDutyController_GetAstronautDutiesByName_ReturnsHandlerResult()
+        {
+            var personAstronaut = new StargateAPI.Business.Dtos.PersonAstronaut { PersonId = 1, Name = "DutyPerson", CurrentRank = "Lt", CurrentDutyTitle = "Pilot" };
+            var duty = new StargateAPI.Business.Data.AstronautDuty { Id = 1, PersonId = 1, DutyTitle = "A", Rank = "R", DutyStartDate = DateTime.UtcNow.Date };
+            var expected = new StargateAPI.Business.Queries.GetAstronautDutiesByNameResult { Person = personAstronaut, AstronautDuties = new System.Collections.Generic.List<StargateAPI.Business.Data.AstronautDuty> { duty } };
+
+            var mock = new Mock<IMediator>();
+            mock.Setup(m => m.Send(It.IsAny<StargateAPI.Business.Queries.GetAstronautDutiesByName>(), It.IsAny<CancellationToken>())).ReturnsAsync(expected);
+            var mediator = mock.Object;
+
+            var controller = new AstronautDutyController(mediator);
+            var actionResult = await controller.GetAstronautDutiesByName("DutyPerson", CancellationToken.None);
+
+            var obj = Assert.IsType<ObjectResult>(actionResult);
+            var asBase = Assert.IsAssignableFrom<StargateAPI.Controllers.BaseResponse>(obj.Value);
             Assert.Equal(asBase.ResponseCode, obj.StatusCode);
             Assert.Same(expected, obj.Value);
         }
@@ -82,14 +103,19 @@ namespace StargateAPI.Tests
         public async Task ExceptionHandlingMiddleware_MapsExceptionToResponse()
         {
             var loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger<StargateAPI.Controllers.ExceptionHandlingMiddleware>>();
-            // create in-memory db context
+            // create in-memory db context and service provider
+            var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
             var options = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<StargateAPI.Business.Data.StargateContext>()
                 .UseInMemoryDatabase("middleware_logs")
                 .Options;
-            using var db = new StargateAPI.Business.Data.StargateContext(options);
+            services.AddSingleton(new StargateAPI.Business.Data.StargateContext(options));
+            var provider = services.BuildServiceProvider();
 
-            var middleware = new StargateAPI.Controllers.ExceptionHandlingMiddleware(ctx => throw new Exception("boom"), loggerMock.Object, db);
+            // RequestDelegate that throws
+            RequestDelegate next = ctx => throw new Exception("boom");
+            var middleware = new StargateAPI.Controllers.ExceptionHandlingMiddleware(next, loggerMock.Object);
             var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = provider;
             httpContext.Response.Body = new System.IO.MemoryStream();
 
             await middleware.InvokeAsync(httpContext);
@@ -102,6 +128,7 @@ namespace StargateAPI.Tests
             Assert.False(resp.Success);
 
             // verify a log entry was written to the database
+            var db = provider.GetRequiredService<StargateAPI.Business.Data.StargateContext>();
             var logs = db.Logs.ToList();
             Assert.Single(logs);
             Assert.Equal("Error", logs[0].Level);
