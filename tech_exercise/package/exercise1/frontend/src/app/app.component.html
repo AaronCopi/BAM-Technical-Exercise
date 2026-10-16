@@ -1,0 +1,135 @@
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="#directory" aria-label="ACTS home">
+      <span class="brand-mark"><svg [lucideIcon]="icons.orbit" [size]="21"></svg></span>
+      <span class="brand-copy"><strong>ACTS</strong><small>ASTRONAUT CAREER TRACKING SYSTEM</small></span>
+    </a>
+    <div class="topbar-meta">
+      <span class="system-status"><span class="status-dot"></span> STARBASE DATABASE</span>
+      <button class="icon-button" type="button" aria-label="Refresh directory" title="Refresh directory" (click)="refreshPeople()" [disabled]="loadingPeople">
+        <svg [lucideIcon]="icons.refreshCw" [size]="17" [class.spinning]="loadingPeople"></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="directory" class="workspace">
+    <section class="intro-row">
+      <div>
+        <div class="eyebrow"><span>PERSONNEL RECORDS</span><span class="eyebrow-rule"></span><span>EARTH / LEO</span></div>
+        <h1>Mission directory<span class="title-period">.</span></h1>
+        <p class="intro-copy">People, assignments, and career history in one place.</p>
+      </div>
+      <button class="button button-primary" type="button" (click)="openDialog('create')">
+        <svg [lucideIcon]="icons.plus" [size]="17"></svg><span>New person</span>
+      </button>
+    </section>
+
+    <div class="metrics" aria-label="Directory summary">
+      <div class="metric"><span class="metric-label">PEOPLE</span><strong>{{ people.length }}</strong><span class="metric-note">in directory</span></div>
+      <div class="metric"><span class="metric-label">ASTRONAUTS</span><strong>{{ astronautCount }}</strong><span class="metric-note">with duty records</span></div>
+      <div class="metric"><span class="metric-label">RETIRED</span><strong>{{ retiredCount }}</strong><span class="metric-note">career complete</span></div>
+      <div class="metric metric-context"><span class="metric-label">RECORD SYSTEM</span><strong class="context-value"><span class="status-dot"></span> OPERATIONAL</strong><span class="metric-note">personnel archive</span></div>
+    </div>
+
+    <div *ngIf="notice" class="feedback feedback-success" role="status">
+      <svg [lucideIcon]="icons.check" [size]="17"></svg><span>{{ notice }}</span>
+      <button type="button" class="feedback-dismiss" aria-label="Dismiss message" (click)="notice = ''"><svg [lucideIcon]="icons.x" [size]="16"></svg></button>
+    </div>
+    <div *ngIf="error" class="feedback feedback-error" role="alert">
+      <svg [lucideIcon]="icons.alert" [size]="17"></svg><span>{{ error }}</span>
+      <button type="button" class="feedback-dismiss" aria-label="Dismiss error" (click)="error = ''"><svg [lucideIcon]="icons.x" [size]="16"></svg></button>
+    </div>
+
+    <section class="directory-layout" aria-label="Personnel directory">
+      <aside class="roster-panel">
+        <div class="panel-heading">
+          <div><span class="section-kicker">DIRECTORY</span><h2>Personnel <span class="count">{{ people.length }}</span></h2></div>
+          <button class="icon-button subtle" type="button" aria-label="Add person" title="Add person" (click)="openDialog('create')"><svg [lucideIcon]="icons.plus" [size]="18"></svg></button>
+        </div>
+        <label class="search-box">
+          <svg [lucideIcon]="icons.search" [size]="16"></svg>
+          <input type="search" aria-label="Search people" placeholder="Search personnel" [(ngModel)]="searchTerm">
+          <kbd>/</kbd>
+        </label>
+        <div class="roster-list" *ngIf="!loadingPeople || people.length; else rosterLoading">
+          <button class="person-row" type="button" *ngFor="let person of filteredPeople" [class.selected]="selectedPerson?.personId === person.personId" (click)="selectPerson(person)">
+            <span class="avatar" [class.avatar-active]="isAstronaut(person)">{{ person.name.charAt(0) }}</span>
+            <span class="person-row-copy"><strong>{{ person.name }}</strong><small>{{ person.currentDutyTitle || 'PERSONNEL RECORD' }}</small></span>
+            <svg *ngIf="selectedPerson?.personId === person.personId" class="row-arrow" [lucideIcon]="icons.chevronRight" [size]="16"></svg>
+          </button>
+          <div class="empty-roster" *ngIf="!filteredPeople.length && !loadingPeople">
+            <svg [lucideIcon]="icons.userRound" [size]="22"></svg>
+            <span>{{ people.length ? 'No matching personnel' : 'Directory is empty' }}</span>
+          </div>
+        </div>
+        <ng-template #rosterLoading><div class="loading-block"><span class="loader"></span><span>Connecting to personnel archive</span></div></ng-template>
+        <div class="roster-footer"><span>MASTER PERSONNEL INDEX</span><span>{{ people.length | number:'2.0-0' }} RECORDS</span></div>
+      </aside>
+
+      <section class="record-panel" *ngIf="selectedPerson as person; else noSelection" aria-label="Selected person record">
+        <div class="record-toolbar"><span class="section-kicker">PERSONNEL FILE <span class="record-id">/ {{ person.personId | number:'4.0-0' }}</span></span>
+          <div class="toolbar-actions">
+            <button class="button button-quiet" type="button" (click)="openDialog('rename')"><svg [lucideIcon]="icons.pencil" [size]="15"></svg><span>Rename</span></button>
+            <button class="button button-primary" type="button" (click)="openDialog('duty')"><svg [lucideIcon]="icons.plus" [size]="16"></svg><span>Add duty</span></button>
+          </div>
+        </div>
+
+        <div class="person-summary">
+          <div class="summary-identity"><span class="avatar avatar-large" [class.avatar-active]="isAstronaut(person)">{{ person.name.charAt(0) }}</span><div>
+            <div class="identity-status" [class.status-retired]="!!person.careerEndDate" [class.status-personnel]="!isAstronaut(person)"><span class="status-dot" [class.status-dot-muted]="!isAstronaut(person) || !!person.careerEndDate"></span>{{ person.careerEndDate ? 'RETIRED ASTRONAUT' : isAstronaut(person) ? 'ACTIVE ASTRONAUT' : 'PERSONNEL RECORD' }}</div>
+            <h2>{{ person.name }}</h2>
+            <p>{{ person.currentRank || 'No rank assigned' }}<span class="identity-divider">/</span>{{ person.currentDutyTitle || 'No current duty' }}</p>
+          </div></div>
+          <div class="career-dates"><div><span>CAREER START</span><strong>{{ formatDate(person.careerStartDate) }}</strong></div><span class="date-connector"></span><div><span>CAREER END</span><strong>{{ formatDate(person.careerEndDate) }}</strong></div></div>
+        </div>
+
+        <div class="history-heading"><div><span class="section-kicker">SERVICE RECORD</span><h3>Duty history</h3></div><span class="history-count">{{ duties.length | number:'2.0-0' }} ASSIGNMENTS</span></div>
+        <div class="duty-table-wrap">
+          <table class="duty-table">
+            <thead><tr><th>ASSIGNMENT</th><th>RANK</th><th>START DATE</th><th>END DATE</th><th>STATUS</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let duty of duties; let first = first" [class.current-duty]="first && !duty.dutyEndDate">
+                <td><span class="duty-title">{{ duty.dutyTitle }}</span></td>
+                <td>{{ duty.rank }}</td>
+                <td class="date-cell">{{ formatDate(duty.dutyStartDate) }}</td>
+                <td class="date-cell">{{ formatDate(duty.dutyEndDate) }}</td>
+                <td><span class="duty-status" [class.status-current]="!duty.dutyEndDate">{{ duty.dutyEndDate ? 'COMPLETE' : 'CURRENT' }}</span></td>
+              </tr>
+              <tr *ngIf="!duties.length && !loadingDuties"><td colspan="5" class="empty-history"><svg [lucideIcon]="icons.history" [size]="20"></svg><span>No duty assignments recorded.</span></td></tr>
+              <tr *ngIf="loadingDuties"><td colspan="5" class="loading-history"><span class="loader"></span>Loading duty history</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="record-note"><svg [lucideIcon]="icons.info" [size]="15"></svg><span>New assignments close the previous duty on the day before the next start date.</span></div>
+      </section>
+      <ng-template #noSelection><section class="record-panel blank-panel"><svg [lucideIcon]="icons.orbit" [size]="28"></svg><h2>No personnel selected</h2><p>Add a person or choose a record from the directory.</p><button class="button button-primary" type="button" (click)="openDialog('create')"><svg [lucideIcon]="icons.plus" [size]="16"></svg><span>New person</span></button></section></ng-template>
+    </section>
+    <footer class="page-footer"><span>ACTS <span class="footer-separator">/</span> PERSONNEL MANAGEMENT</span><span>STARBASE DATABASE <span class="footer-separator">·</span> SECURE RECORD</span></footer>
+  </main>
+
+  <div class="dialog-backdrop" *ngIf="dialogMode" (click)="closeDialog()" (keydown.escape)="closeDialog()">
+    <section class="dialog" role="dialog" aria-modal="true" [attr.aria-labelledby]="'dialog-title'" (click)="$event.stopPropagation()">
+      <div class="dialog-header"><div><span class="section-kicker">PERSONNEL OPERATIONS</span><h2 id="dialog-title">{{ dialogMode === 'create' ? 'New person' : dialogMode === 'rename' ? 'Rename record' : 'Add astronaut duty' }}</h2></div>
+        <button class="icon-button subtle" type="button" aria-label="Close dialog" (click)="closeDialog()"><svg [lucideIcon]="icons.x" [size]="18"></svg></button></div>
+      <p class="dialog-description" *ngIf="dialogMode === 'create'">Create a master personnel record. Astronaut details can be added with the first duty assignment.</p>
+      <p class="dialog-description" *ngIf="dialogMode === 'rename'">Update the name associated with this personnel record.</p>
+      <p class="dialog-description" *ngIf="dialogMode === 'duty'">Record a new assignment for <strong>{{ selectedPerson?.name }}</strong>. The previous duty will close automatically.</p>
+      <form *ngIf="dialogMode === 'create'" (ngSubmit)="submitPerson()">
+        <label class="form-field"><span>FULL NAME</span><input name="personName" [(ngModel)]="personName" required maxlength="150" autocomplete="name" placeholder="e.g. Samantha Carter" autofocus></label>
+        <div class="dialog-error" *ngIf="error">{{ error }}</div>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" (click)="closeDialog()">Cancel</button><button class="button button-primary" type="submit" [disabled]="saving || !personName.trim()"><span *ngIf="saving" class="button-loader"></span><span>{{ saving ? 'Saving' : 'Create record' }}</span></button></div>
+      </form>
+      <form *ngIf="dialogMode === 'rename'" (ngSubmit)="submitRename()">
+        <label class="form-field"><span>NEW NAME</span><input name="newName" [(ngModel)]="newName" required maxlength="150" autocomplete="name" placeholder="Enter full name" autofocus></label>
+        <div class="dialog-error" *ngIf="error">{{ error }}</div>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" (click)="closeDialog()">Cancel</button><button class="button button-primary" type="submit" [disabled]="saving || !newName.trim()"><span *ngIf="saving" class="button-loader"></span><span>{{ saving ? 'Saving' : 'Save name' }}</span></button></div>
+      </form>
+      <form *ngIf="dialogMode === 'duty'" (ngSubmit)="submitDuty()">
+        <div class="form-grid"><label class="form-field"><span>RANK</span><input name="dutyRank" [(ngModel)]="dutyRank" required maxlength="80" placeholder="e.g. Colonel"></label><label class="form-field"><span>DUTY TITLE</span><input name="dutyTitle" [(ngModel)]="dutyTitle" required maxlength="120" placeholder="e.g. Mission Specialist"></label></div>
+        <label class="form-field"><span>ASSIGNMENT START DATE</span><input type="date" name="dutyStartDate" [(ngModel)]="dutyStartDate" required></label>
+        <div class="dialog-error" *ngIf="error">{{ error }}</div>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" (click)="closeDialog()">Cancel</button><button class="button button-primary" type="submit" [disabled]="saving || !dutyRank.trim() || !dutyTitle.trim() || !dutyStartDate"><span *ngIf="saving" class="button-loader"></span><span>{{ saving ? 'Saving' : 'Add assignment' }}</span></button></div>
+      </form>
+    </section>
+  </div>
+</div>
