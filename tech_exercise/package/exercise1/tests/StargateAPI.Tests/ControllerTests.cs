@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using MediatR;
 using StargateAPI.Controllers;
 using StargateAPI.Business.Queries;
@@ -79,7 +81,14 @@ namespace StargateAPI.Tests
         [Fact]
         public async Task ExceptionHandlingMiddleware_MapsExceptionToResponse()
         {
-            var middleware = new StargateAPI.Controllers.ExceptionHandlingMiddleware(ctx => throw new Exception("boom"));
+            var loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger<StargateAPI.Controllers.ExceptionHandlingMiddleware>>();
+            // create in-memory db context
+            var options = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<StargateAPI.Business.Data.StargateContext>()
+                .UseInMemoryDatabase("middleware_logs")
+                .Options;
+            using var db = new StargateAPI.Business.Data.StargateContext(options);
+
+            var middleware = new StargateAPI.Controllers.ExceptionHandlingMiddleware(ctx => throw new Exception("boom"), loggerMock.Object, db);
             var httpContext = new DefaultHttpContext();
             httpContext.Response.Body = new System.IO.MemoryStream();
 
@@ -91,6 +100,12 @@ namespace StargateAPI.Tests
             var body = await reader.ReadToEndAsync();
             var resp = System.Text.Json.JsonSerializer.Deserialize<StargateAPI.Controllers.BaseResponse>(body);
             Assert.False(resp.Success);
+
+            // verify a log entry was written to the database
+            var logs = db.Logs.ToList();
+            Assert.Single(logs);
+            Assert.Equal("Error", logs[0].Level);
+            // logger called (behavior verified by absence of exception and response content)
         }
 
         [Fact]
