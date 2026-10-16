@@ -18,3 +18,11 @@ Open `http://localhost:4200`. The Angular development server proxies `/Person` a
 - Browse and search people, and view astronaut duty history.
 - Create a person and rename an existing person.
 - Add a duty assignment. The API automatically closes the previous duty.
+
+## Tests
+
+Run the frontend unit tests once with:
+
+```powershell
+npm test
+```

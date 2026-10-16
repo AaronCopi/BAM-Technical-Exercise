@@ -13,6 +13,7 @@
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "browser": "src/main.ts",
+            "polyfills": ["zone.js"],
             "index": "src/index.html",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
@@ -54,6 +55,14 @@
             }
           },
           "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "buildTarget": "acts-frontend:build:development",
+            "runner": "vitest",
+            "tsConfig": "tsconfig.spec.json"
+          }
         }
       }
     }
