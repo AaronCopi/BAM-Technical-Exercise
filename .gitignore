@@ -7,3 +7,7 @@ tech_exercise/package/exercise1/api/TestResults/
 tech_exercise/package/exercise1/tests/StargateAPI.Tests/StargateAPI.Tests.slnx
 tech_exercise/package/exercise1/tests/StargateAPI.Tests/bin/
 tech_exercise/package/exercise1/tests/StargateAPI.Tests/obj/
+tech_exercise/package/exercise1/frontend/node_modules/
+tech_exercise/package/exercise1/frontend/dist/
+tech_exercise/package/exercise1/frontend/.angular/
+tech_exercise/package/exercise1/frontend/package-lock.json
